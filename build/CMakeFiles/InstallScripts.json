@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/leone/Documents/Leonel/Proyectos/Sistemas/LeonelOS/build/cmake_install.cmake",
+		"C:/Users/leone/Documents/Leonel/Proyectos/Sistemas/LeonelOS/build/src/kernel/cmake_install.cmake",
+		"C:/Users/leone/Documents/Leonel/Proyectos/Sistemas/LeonelOS/build/boot/bootloader/cmake_install.cmake",
+		"C:/Users/leone/Documents/Leonel/Proyectos/Sistemas/LeonelOS/build/tools/cmake_install.cmake",
+		"C:/Users/leone/Documents/Leonel/Proyectos/Sistemas/LeonelOS/build/tools/image_tool/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
