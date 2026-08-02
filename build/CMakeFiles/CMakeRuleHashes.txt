@@ -14,12 +14,13 @@ fbcf7058254e63d250ea2926f0d97bc0 boot/bootloader/obj/assets.obj
 31cec6919568b0cc07ad9e618de74feb leonelos-esp.img
 f1926fd63a951e0c684c355e1f0be1d9 leonelos.iso
 29a17f250eef22452da073c125fdb8cf src/kernel/CMakeFiles/kernel
-e2d100ee77aa93384f8e5e04c0711c21 src/kernel/kernel.elf
+689be5beebc7031547ea5570a3f22102 src/kernel/kernel.elf
 14a22ed790d2e173fb4825144ba90853 src/kernel/obj/bootui.o
 1cfc8751e5abd1abafb9106ea0a7efe9 src/kernel/obj/cpu.o
 36ce942d2d6057cbbefb6f5f0e766251 src/kernel/obj/debug.o
 912776102cf6e72d57638338b3c32ed8 src/kernel/obj/framebuffer.o
 e3ad01af802c4591515b8caebdaa8682 src/kernel/obj/gdt.o
+e3ca493c7ba5f9b9ab79a746aa80561f src/kernel/obj/heap.o
 6fd49dd92c331386ef6a456aff7c44d0 src/kernel/obj/idt.o
 7316675bde0c44e45a5ec0dd1e9203ca src/kernel/obj/interrupts.o
 f84ab177e325378f4002949ee854e91a src/kernel/obj/io.o
@@ -28,8 +29,10 @@ c12123663e303e418f54b5719509f84d src/kernel/obj/irq.o
 77629d365c2ce5865b86c776863428ce src/kernel/obj/isrs.o
 73ce9f525a47be909f3904e41b61afbf src/kernel/obj/kernel.o
 4062564e8427115d174d90dcccea429b src/kernel/obj/keyboard.o
+7151d870d075dc993b5b3f85d4178463 src/kernel/obj/physical.o
 08867d5ce35bc2df05ab59d146b71dc1 src/kernel/obj/pic.o
 2d88aac7cd5a236a94f17b29f4e5b233 src/kernel/obj/start.o
 f1617cb81b7a151ea3da4d941a5c2252 src/kernel/obj/timer.o
+5bcbca9f526732d95ab93d24ac60d540 src/kernel/obj/virtual.o
 b79334f91b4ddf019a94a18bea7fa268 tools/CMakeFiles/tools
 1615180a32b2e350bf10b54e77bf135a tools/image_tool/CMakeFiles/image-tool

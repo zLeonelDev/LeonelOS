@@ -6,6 +6,7 @@ file(REMOVE_RECURSE
   "obj/debug.o"
   "obj/framebuffer.o"
   "obj/gdt.o"
+  "obj/heap.o"
   "obj/idt.o"
   "obj/interrupts.o"
   "obj/io.o"
@@ -14,9 +15,11 @@ file(REMOVE_RECURSE
   "obj/isrs.o"
   "obj/kernel.o"
   "obj/keyboard.o"
+  "obj/physical.o"
   "obj/pic.o"
   "obj/start.o"
   "obj/timer.o"
+  "obj/virtual.o"
 )
 
 # Per-language clean rules from dependency scanning.

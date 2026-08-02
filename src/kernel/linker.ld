@@ -10,6 +10,8 @@ SECTIONS
      * 0xFFFFFFFF80000000 when the paging subsystem is wired in. */
     . = 0x10000000;
 
+    kernel_start = .;
+
     .text : ALIGN(0x1000)
     {
         *(.text._start)

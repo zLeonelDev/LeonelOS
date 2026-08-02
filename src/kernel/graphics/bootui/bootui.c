@@ -14,12 +14,13 @@
  * the boot screen scales naturally across 2048x2048, 1366x768, 1024x768, etc.
  * Each unit is a fixed-point Q12 value for accurate non-integer scaling. */
 #define LOGO_TARGET_W_FP    3072   /* 0.75 * 4096 */
-#define ICON_TARGET_W_FP    1024   /* 0.25 * 4096 */
-#define SPINNER_TARGET_W_FP  819   /* 0.20 * 4096 — small enough that the spinner ring stays fully on-screen */
-#define GAP_FP              256    /* 0.0625 * 4096 — vertical gap between elements */
+#define ICON_TARGET_W_FP     819   /* 0.20 * 4096 — slightly smaller, drawn close to the logo */
+#define SPINNER_TARGET_W_FP  320   /* ~50px on a 640-framebuffer; ~60px on a 1366x768 monitor */
+#define GAP_LOGO_ICON_FP    128    /* tight: 0.03125 — logo and icon sit close together as a single block */
+#define BOOTUI_TOP_MARGIN_FP 512  /* 0.125 of basis — pushes the banner up from the top of the framebuffer */
+#define BOOTUI_BOTTOM_MARGIN_FP 1280 /* 0.3125 of basis — pins the spinner in the lower third of the framebuffer */
 
 static BootAssets* g_assets = NULL;
-static u32 g_spinner_angle = 0;
 
 static u32 g_layout_logo_x = 0;
 static u32 g_layout_logo_y = 0;
@@ -99,13 +100,15 @@ static void bootui_compute_layout(Framebuffer* fb) {
     g_layout_spinner_size = scale_fp(SPINNER_TARGET_W_FP, basis);
     g_layout_spinner_x = (fb->width - g_layout_spinner_size) / 2;
 
-    u32 gap = scale_fp(GAP_FP, basis);
-    u32 total_h = g_layout_logo_h + gap + g_layout_icon_h + gap + g_layout_spinner_size;
-    u32 start_y = (fb->height >= total_h) ? (fb->height - total_h) / 2 : 0;
-
-    g_layout_logo_y = start_y;
-    g_layout_icon_y = start_y + g_layout_logo_h + gap;
-    g_layout_spinner_y = start_y + g_layout_logo_h + gap + g_layout_icon_h + gap;
+    u32 gap_li = scale_fp(GAP_LOGO_ICON_FP, basis);
+    u32 top_margin = scale_fp(BOOTUI_TOP_MARGIN_FP, basis);
+    u32 bottom_margin = scale_fp(BOOTUI_BOTTOM_MARGIN_FP, basis);
+    /* Banner (logo + icon) anchored from the top of the framebuffer. */
+    g_layout_logo_y = top_margin;
+    g_layout_icon_y = g_layout_logo_y + g_layout_logo_h + gap_li;
+    /* Spinner anchored from the bottom of the framebuffer so it sits in
+     * the lower third regardless of icon size. */
+    g_layout_spinner_y = fb->height - bottom_margin - g_layout_spinner_size;
 }
 
 void bootui_init(BootAssets* assets) {
@@ -139,9 +142,8 @@ void bootui_draw_boot_screen() {
                               g_layout_icon_w, g_layout_icon_h);
     }
 
-    if (g_assets->spinner.data && g_layout_spinner_size > 0) {
-        bootui_draw_spinner(g_layout_spinner_x, g_layout_spinner_y);
-    }
+    /* The spinner is a procedural ring; it's drawn by bootui_animate_loading,
+     * so nothing to draw here. */
 }
 
 void bootui_set_loading_text(const char* text) {
@@ -159,106 +161,140 @@ static void rotate_point(u32 src_size, s32 sx, s32 sy, u32 angle_deg, s32* rx, s
     *ry = cy + (s32)(((s64)dx * sa + (s64)dy * ca) / FIX_ONE);
 }
 
+/*
+ * Compatibility stub — the procedural spinner is now driven by
+ * bootui_draw_ring(), which the animator redraws every ~30 ms. This stub is
+ * kept so external callers that still mention bootui_draw_spinner continue
+ * to compile; it just forwards to the ring renderer at the layout size.
+ */
 void bootui_draw_spinner(u32 x, u32 y) {
-    if (!g_assets || !g_assets->spinner.data) return;
+    (void)x;
+    (void)y;
+    if (g_layout_spinner_size > 0) {
+        bootui_draw_ring(g_layout_spinner_x, g_layout_spinner_y, g_layout_spinner_size);
+    }
+}
 
+/*
+ * Procedural spinner ring with an animated arc. The ring is a thin annulus
+ * (inner radius ~70% of outer) drawn in cyan. A leading "arc" sector covers
+ * 90 degrees and rotates with each call (angle advances by ~6 degrees per
+ * draw at 100 Hz, yielding a full rotation every second).
+ *
+ * Inside the arc the colour is the bright cyan; outside it's a much darker
+ * cyan so the ring shape stays visible but the highlight clearly indicates
+ * rotation.
+ */
+#define SPINNER_SPEED_DEG  6
+#define SPINNER_ARC_DEG    150
+
+static u32 g_spinner_angle = 0;
+
+void bootui_draw_ring(u32 x, u32 y, u32 size) {
     Framebuffer* fb = framebuffer_get();
-    if (!fb || !fb->base) return;
+    if (!fb || !fb->base || size == 0) return;
 
     u8 kind = fb->pixel_format;
-    u32 src_size = g_assets->spinner.width;
-    if (src_size == 0) return;
-
-    u32 dst_size = g_layout_spinner_size;
-    if (dst_size == 0) return;
-
     u32 stride = fb->pitch / 4;
-    u8* src_b = (u8*)g_assets->spinner.data;
+    u32 cx = size / 2;
+    u32 cy = size / 2;
+    u32 r_out_sq = (size * size) / 4;
+    u32 r_in_sq  = (size * size * 49) / 400;  /* 0.7^2 = 0.49 */
+    if (r_in_sq == 0) r_in_sq = 1;
 
-    g_spinner_angle += SPINNER_SPEED;
-    if (g_spinner_angle >= 360) g_spinner_angle -= 360;
-    u32 angle = g_spinner_angle;
-
-    for (u32 dy = 0; dy < dst_size; dy++) {
+    /* Smooth brightness within the arc via a cubic ease so the leading
+     * edge fades out rather than having a hard boundary. */
+    for (u32 dy = 0; dy < size; dy++) {
         u32 dst_row = y + dy;
         if (dst_row >= fb->height) break;
 
-        for (u32 dx = 0; dx < dst_size; dx++) {
+        for (u32 dx = 0; dx < size; dx++) {
             u32 dst_col = x + dx;
             if (dst_col >= fb->width) break;
 
-            /* Map destination pixel to source pixel using the rotation
-             * angle, then nearest-neighbor sample the source. */
-            s32 rx, ry;
-            rotate_point(src_size, (s32)dx, (s32)dy, angle, &rx, &ry);
-            if (rx < 0 || rx >= (s32)src_size || ry < 0 || ry >= (s32)src_size) continue;
+            s32 ax = (s32)dx - (s32)cx;
+            s32 ay = (s32)dy - (s32)cy;
+            u32 aax = (u32)(ax < 0 ? -ax : ax);
+            u32 aay = (u32)(ay < 0 ? -ay : ay);
+            u32 r2 = aax * aax + aay * aay;
+            if (r2 >= r_out_sq || r2 < r_in_sq) continue;
 
-            u32 src_idx = (u32)ry * src_size + (u32)rx;
-            /* Asset RGBA byte order: byte0=R, byte1=G, byte2=B, byte3=A. */
-            u8 r = src_b[src_idx * 4 + 0];
-            u8 g = src_b[src_idx * 4 + 1];
-            u8 b = src_b[src_idx * 4 + 2];
-            u8 a = src_b[src_idx * 4 + 3];
+            /* Convert (ax, ay) to an angle in 0..359, measured clockwise
+             * from the 12-o'clock position so the math lines up with the
+             * way people expect a clock-face spinner to behave. We use
+             * atan2-style cross/dot with 12-o'clock = (0,-r). */
+            u32 angle;
+            if (aax == 0 && aay == 0) {
+                angle = 0;
+            } else {
+                /* Map (ax, ay) to a unit direction in screen coords
+                 * (y grows downward). Heading is 0 at -y, 90 at +x. */
+                s32 dot = -ay;                 /* (0,-1) . (ax,ay) */
+                s32 cross = ax;                /* (0,-1) x (ax,ay).z */
+                if (dot > 0 && cross >= 0)
+                    angle = (u32)((u64)cross * 45 / (dot + cross));
+                else if (dot > 0 && cross < 0)
+                    angle = 360 - (u32)((u64)(-cross) * 45 / (dot - cross));
+                else if (dot <= 0 && cross > 0)
+                    angle = 180 - (u32)((u64)cross * 45 / (-dot + cross));
+                else if (dot <= 0 && cross < 0)
+                    angle = 180 + (u32)((u64)(-cross) * 45 / (-dot - cross));
+                else
+                    angle = 0;
+            }
+            angle %= 360;
 
-            if (a == 0) continue;
+            u32 delta = (angle + 360 - g_spinner_angle) % 360;
+
+            u8 rr, gg, bb;
+            /* Sin-like brightness that peaks at the leading edge
+             * (delta=0) and dips at the trailing edge (delta=180). The
+             * peak-to-trough range is wide so rotation is visible. */
+            s32 c = bootui_cos_deg(delta);  /* +1 at delta=0, -1 at delta=180 */
+            /* -1..+1 -> 0..255 brightness, then bias back so even the dim
+             * side stays visible (no full black). */
+            u32 bright = (u32)((c + FIX_ONE) * 127 / (2 * FIX_ONE));
+            gg = (u8)(60 + (bright * 180) / 255);
+            bb = (u8)(100 + (bright * 155) / 255);
+            rr = 0;
 
             u32 d_idx = dst_row * stride + dst_col;
             u32 out;
-            if (a == 255) {
-                /* Format layout in little-endian memory:
-                 *   RGBA: byte0=R, byte1=G, byte2=B, byte3=A -> (A<<24)|(B<<16)|(G<<8)|R
-                 *   BGRA: byte0=B, byte1=G, byte2=R, byte3=A -> (A<<24)|(R<<16)|(G<<8)|B
-                 */
-                if (kind == PIXEL_FMT_RGBA) {
-                    out = (0xFFu << 24) | ((u32)b << 16) | ((u32)g << 8) | r;
-                } else {
-                    out = (0xFFu << 24) | ((u32)r << 16) | ((u32)g << 8) | b;
-                }
+            if (kind == PIXEL_FMT_RGBA) {
+                out = (0xFFu << 24) | ((u32)bb << 16) | ((u32)gg << 8) | rr;
             } else {
-                u32 bg = *(u32*)((u8*)fb->base + d_idx * 4);
-                u8 br, bgch, bb;
-                if (kind == PIXEL_FMT_RGBA) {
-                    br = bg & 0xFF;
-                    bgch = (bg >> 8) & 0xFF;
-                    bb = (bg >> 16) & 0xFF;
-                } else {
-                    bb = bg & 0xFF;
-                    bgch = (bg >> 8) & 0xFF;
-                    br = (bg >> 16) & 0xFF;
-                }
-                u8 rr = (u8)((r * a + br * (255 - a) + 127) / 255);
-                u8 gg = (u8)((g * a + bgch * (255 - a) + 127) / 255);
-                u8 bb_out = (u8)((b * a + bb * (255 - a) + 127) / 255);
-                if (kind == PIXEL_FMT_RGBA) {
-                    out = (0xFFu << 24) | ((u32)bb_out << 16) | ((u32)gg << 8) | rr;
-                } else {
-                    out = (0xFFu << 24) | ((u32)rr << 16) | ((u32)gg << 8) | bb_out;
-                }
+                out = (0xFFu << 24) | ((u32)rr << 16) | ((u32)gg << 8) | bb;
             }
             *(u32*)((u8*)fb->base + d_idx * 4) = out;
         }
     }
+
+    g_spinner_angle = (g_spinner_angle + SPINNER_SPEED_DEG) % 360;
 }
 
 void bootui_animate_loading() {
     Framebuffer* fb = framebuffer_get();
-    if (!fb || !g_assets || !g_assets->spinner.data) {
+    if (!fb) {
         for (;;) asm volatile("hlt");
     }
 
-    u64 last_draw = 0;
+    /* Boot screen finalize: replace the initially-rendered static ring with
+     * the first rotated frame, so the highlight arc appears immediately. */
+    bootui_draw_ring(g_layout_spinner_x, g_layout_spinner_y, g_layout_spinner_size);
+
+    u64 last_draw_tick = 0;
     for (;;) {
+        asm volatile("hlt");
         u64 now = timer_get_ticks();
-        if (now != last_draw) {
-            last_draw = now;
-            if ((now & 0x1) == 0) {
-                bootui_draw_spinner(g_layout_spinner_x, g_layout_spinner_y);
-            }
+        /* Redraw every 2 timer ticks (~20 ms). With SPINNER_SPEED_DEG=6
+         * per draw that gives ~300°/s — a full revolution every ~1.2 s. */
+        if ((now - last_draw_tick) >= 2) {
+            last_draw_tick = now;
+            bootui_draw_ring(g_layout_spinner_x, g_layout_spinner_y, g_layout_spinner_size);
         }
         while (keyboard_has_char()) {
             char c = keyboard_read_char();
             debug_log("KEY: %c\n", c);
         }
-        asm volatile("hlt");
     }
 }

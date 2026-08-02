@@ -21,6 +21,9 @@ set(KERNEL_SOURCES
     ${KERNEL_DIR}/arch/x86_64/drivers/keyboard/keyboard.cpp
     ${KERNEL_DIR}/graphics/bootui/bootui.c
     ${KERNEL_DIR}/graphics/framebuffer/framebuffer.c
+    ${KERNEL_DIR}/memory/physical/physical.c
+    ${KERNEL_DIR}/memory/virtual/virtual.c
+    ${KERNEL_DIR}/memory/heap/heap.c
 )
 
 set(KERNEL_ASM_SOURCES

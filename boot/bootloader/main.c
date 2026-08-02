@@ -137,12 +137,16 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
     Print(L"Memory: %llu entries, %llu MB total, %llu MB usable\r\n",
           mem_map.count, mem_map.total_memory / 1048576ull, mem_map.usable_memory / 1048576ull);
 
-    /* Draw the splash. All Print() output must happen before this: the
-     * firmware's text console writes into the same framebuffer. */
+    /* Clear the framebuffer and let the kernel paint its own boot screen.
+     * Drawing our own splash here would briefly flash on screen with a
+     * layout fixed for the previous 2048x2048 mode and look unprofessional
+     * before the kernel's adaptive layout appears. */
     graphics_clear(&fb_info, 0x00000000);
-    bootui_draw(&fb_info, &assets);
 
-    system_table->BootServices->Stall(50000);
+    /* Brief settle so the firmware's console pixels (from the Print()s
+     * above) are cleared by our black framebuffer before the kernel maps
+     * the GOP and takes over. */
+    system_table->BootServices->Stall(10000);
 
     status = system_table->BootServices->ExitBootServices(image_handle, (UINTN)mem_map.map_key);
     if (status == EFI_INVALID_PARAMETER) {

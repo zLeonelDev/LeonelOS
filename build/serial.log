@@ -1,0 +1,37 @@
+[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HBdsDxe: loading Boot0001 "UEFI QEMU DVD-ROM QM00003 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Secondary,Master,0x0)
+BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00003 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Secondary,Master,0x0)
+LeonelOS Bootloader 0.1.0
+Framebuffer: 960x640 pitch=3840 bpp=32 fmt=1
+  masks: R=ff G=ff00 B=ff0000 A=ff000000
+  SFSP: '\kernel.elf' filesize=655168
+  SFSP: '\kernel.elf' filesize=655168
+LOAD: virt=0x10000000 size=0x4000 file_size=0x4000
+LOAD: virt=0x10004000 size=0x87000 file_size=0x87000
+Kernel entry: 0x10002f80
+  SFSP: '\boot\assets\leonelos.rgba' filesize=321552
+  SFSP: '\boot\assets\icon.rgba' filesize=718080
+  SFSP: '\boot\assets\spinner.rgba' filesize=1048576
+Assets: logo=638x126 icon=408x440 spinner=512x512
+Memory: 108 entries, 12799 MB total, 459 MB usable
+LeonelOS Kernel v0.1.0 - Start
+Framebuffer: 960x640 pitch=3840 fmt=BGRA
+Framebuffer: 960x640 pitch=3840
+CPU: Vendor=AuthenticAMD Family=15 Model=11 Stepping=1
+Timer: PIT at 100 Hz
+Keyboard: PS/2 ready
+PMM: 117704 pages total, 117703 pages free, 459 MB usable
+PMM: free regions (up to 4):
+PMM:   [1000..87000) 134 pages
+PMM:   [88000..a0000) 24 pages
+PMM:   [100000..800000) 1792 pages
+PMM:   [808000..80b000) 3 pages
+Heap initialized (physical allocator backed)
+PMM test: OK (a=1000 b=5000 c=15000)
+PMM test: freed back, free=470812 KB
+Kernel initialized successfully, interrupts on
+PIT: 1 s
+PIT: 2 s
+PIT: 3 s
+PIT: 4 s
+PIT: 5 s
+PIT: 6 s

@@ -3,12 +3,21 @@
 
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void init_virtual_memory();
 void init_virtual_memory_kernel();
 virt_addr_t allocate_virtual(u64 pages);
 void free_virtual(virt_addr_t addr, u64 pages);
 virt_addr_t map_physical(phys_addr_t phys, u64 pages, u32 flags);
 void unmap_physical(virt_addr_t addr, u64 pages);
+virt_addr_t map_physical_at(virt_addr_t vaddr, phys_addr_t phys, u64 pages, u32 flags);
 virt_addr_t virtual_to_physical(virt_addr_t virt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
