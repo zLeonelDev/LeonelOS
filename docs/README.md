@@ -2,6 +2,10 @@
 
 A hobby operating system written from scratch, designed with a clean and modular architecture.
 
+## Status
+
+LeonelOS is currently in early development. Most components are planned and under active construction.
+
 ## Architecture
 
 ```
