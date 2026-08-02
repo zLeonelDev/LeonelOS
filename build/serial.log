@@ -3,11 +3,11 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00003 " from PciRoot(0x0)/Pci(0x1
 LeonelOS Bootloader 0.1.0
 Framebuffer: 960x640 pitch=3840 bpp=32 fmt=1
   masks: R=ff G=ff00 B=ff0000 A=ff000000
-  SFSP: '\kernel.elf' filesize=724352
-  SFSP: '\kernel.elf' filesize=724352
+  SFSP: '\kernel.elf' filesize=724536
+  SFSP: '\kernel.elf' filesize=724536
 LOAD: virt=0x10000000 size=0x8000 file_size=0x8000
 LOAD: virt=0x10008000 size=0x87000 file_size=0x87000
-Kernel entry: 0x10006590
+Kernel entry: 0x100065c0
   SFSP: '\boot\assets\leonelos.rgba' filesize=321552
   SFSP: '\boot\assets\icon.rgba' filesize=718080
   SFSP: '\boot\assets\spinner.rgba' filesize=1048576
@@ -40,29 +40,3 @@ PIT: 6 s
 PIT: 7 s
 PIT: 8 s
 PIT: 9 s
-PIT: 10 s
-PRESS at 40,1210
-  -> taskbar
-PIT: 11 s
-PIT: 12 s
-PIT: 13 s
-PIT: 14 s
-PRESS at 120,50
-  -> window 'System Info' titlebar
-  -> drag start off=94,14
-DRAG window to 46,52
-DRAG window to 66,70
-DRAG window to 86,88
-DRAG window to 106,106
-DRAG window to 126,122
-DRAG window to 146,140
-DRAG window to 166,158
-DRAG window to 186,176
-DRAG window to 206,192
-DRAG window to 226,210
-DRAG window to 246,228
-DRAG window to 266,246
-PIT: 15 s
-PIT: 16 s
-PIT: 17 s
-PIT: 18 s

@@ -83,8 +83,10 @@ static void boot_animation(u32 ms) {
 
 static void sysinfo_draw(Window* w) {
     window_fill(w, SYSINFO_BG);
-    window_text(w, 6, 6, "LeonelOS v0.1.0", SYSINFO_ACCENT, SYSINFO_BG);
-    window_rect(w, 4, 18, window_content_w(w) - 8, 1, SYSINFO_SEP);
+    u32 cx = window_content_x(w);
+    u32 cy = window_content_y(w);
+    window_text(w, (i32)cx + 6, (i32)cy + 6, "LeonelOS v0.1.0", SYSINFO_ACCENT, SYSINFO_BG);
+    window_rect(w, (i32)cx + 4, (i32)cy + 18, window_content_w(w) - 8, 1, SYSINFO_SEP);
 
     Framebuffer* fb = framebuffer_get();
     u32 free_kb = (u32)(get_free_memory() / 1024);
@@ -93,33 +95,33 @@ static void sysinfo_draw(Window* w) {
     mouse_get_position(&mx, &my);
 
     char line[64];
-    u32 y = 28;
+    u32 y = cy + 28;
 
     line[0] = 0;
     append_str(line, "Screen: ");
     append_dec(line, fb->width);
     append_str(line, "x");
     append_dec(line, fb->height);
-    window_text(w, 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
+    window_text(w, (i32)cx + 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
     y += 11;
 
     line[0] = 0;
     append_str(line, "Free mem: ");
     append_dec(line, free_kb);
     append_str(line, " KB");
-    window_text(w, 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
+    window_text(w, (i32)cx + 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
     y += 11;
 
     line[0] = 0;
     append_str(line, "Uptime: ");
     append_dec(line, up);
     append_str(line, " s");
-    window_text(w, 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
+    window_text(w, (i32)cx + 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
     y += 11;
 
     line[0] = 0;
     append_str(line, "CPU: x86-64 SMP");
-    window_text(w, 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
+    window_text(w, (i32)cx + 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
     y += 11;
 
     line[0] = 0;
@@ -127,7 +129,7 @@ static void sysinfo_draw(Window* w) {
     append_dec(line, mx);
     append_str(line, ", ");
     append_dec(line, my);
-    window_text(w, 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
+    window_text(w, (i32)cx + 6, (i32)y, line, SYSINFO_TEXT, SYSINFO_BG);
 }
 
 static void term_draw(Window* w) {
@@ -145,13 +147,16 @@ static void term_draw(Window* w) {
     if (cap > TERM_CAP) cap = TERM_CAP;
     s->cap = cap;
 
+    u32 cx = window_content_x(w) + 2;
+    u32 cy = window_content_y(w) + 2;
+
     u32 start = s->write > cap ? s->write - cap : 0;
     u32 cell = 0;
     for (u32 i = start; i < s->write && cell < cap; i++, cell++) {
         char c[2] = { s->buf[i % TERM_CAP], 0 };
-        u32 cx = (cell % cols) * FONT_GLYPH_W + 2;
-        u32 cy = (cell / cols) * FONT_GLYPH_H + 2;
-        window_text(w, (i32)cx, (i32)cy, c, TERM_FG, TERM_BG);
+        u32 gx = cx + (cell % cols) * FONT_GLYPH_W;
+        u32 gy = cy + (cell / cols) * FONT_GLYPH_H;
+        window_text(w, (i32)gx, (i32)gy, c, TERM_FG, TERM_BG);
     }
 }
 
@@ -231,17 +236,14 @@ static void mouse_press(void) {
     Framebuffer* fb = framebuffer_get();
     u32 mx, my;
     mouse_get_position(&mx, &my);
-    debug_log("PRESS at %u,%u\n", mx, my);
 
     if (my >= fb->height - TASKBAR_H) {
-        debug_log("  -> taskbar\n");
         taskbar_click(mx);
         return;
     }
 
     Window* w = compositor_window_at((i32)mx, (i32)my);
     if (!w) {
-        debug_log("  -> none (unfocus all)\n");
         compositor_unfocus_all();
         return;
     }
@@ -263,14 +265,12 @@ static void mouse_press(void) {
     bool in_titlebar = ry >= (i32)WINDOW_BORDER &&
                        ry < (i32)(WINDOW_BORDER + WINDOW_TITLEBAR_H);
 
-    debug_log("  -> window '%s' %s\n", w->title, in_titlebar ? "titlebar" : "content");
     compositor_focus(w);
     if (in_titlebar) {
         w->dragging = true;
         g_drag_win = w;
         w->drag_off_x = (i32)mx - w->x;
         w->drag_off_y = (i32)my - w->y;
-        debug_log("  -> drag start off=%d,%d\n", w->drag_off_x, w->drag_off_y);
     }
 }
 
@@ -303,7 +303,6 @@ static void update_drag(void) {
     if (nx != w->x || ny != w->y) {
         w->x = nx;
         w->y = ny;
-        debug_log("DRAG window to %d,%d\n", nx, ny);
         compositor_invalidate(w);
     }
 }
@@ -311,6 +310,7 @@ static void update_drag(void) {
 static void handle_keys(void) {
     while (keyboard_has_char()) {
         char c = keyboard_read_char();
+        debug_log("KEY: %02x\n", (u8)c);
         Window* w = compositor_focused_window();
         if (w && w->key_handler) w->key_handler(w, c);
     }
