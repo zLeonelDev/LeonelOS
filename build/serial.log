@@ -3,11 +3,11 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00003 " from PciRoot(0x0)/Pci(0x1
 LeonelOS Bootloader 0.1.0
 Framebuffer: 960x640 pitch=3840 bpp=32 fmt=1
   masks: R=ff G=ff00 B=ff0000 A=ff000000
-  SFSP: '\kernel.elf' filesize=655168
-  SFSP: '\kernel.elf' filesize=655168
-LOAD: virt=0x10000000 size=0x4000 file_size=0x4000
-LOAD: virt=0x10004000 size=0x87000 file_size=0x87000
-Kernel entry: 0x10002f80
+  SFSP: '\kernel.elf' filesize=724352
+  SFSP: '\kernel.elf' filesize=724352
+LOAD: virt=0x10000000 size=0x8000 file_size=0x8000
+LOAD: virt=0x10008000 size=0x87000 file_size=0x87000
+Kernel entry: 0x10006590
   SFSP: '\boot\assets\leonelos.rgba' filesize=321552
   SFSP: '\boot\assets\icon.rgba' filesize=718080
   SFSP: '\boot\assets\spinner.rgba' filesize=1048576
@@ -19,7 +19,8 @@ Framebuffer: 960x640 pitch=3840
 CPU: Vendor=AuthenticAMD Family=15 Model=11 Stepping=1
 Timer: PIT at 100 Hz
 Keyboard: PS/2 ready
-PMM: 117704 pages total, 117703 pages free, 459 MB usable
+Mouse: PS/2 ready
+PMM: 117700 pages total, 117699 pages free, 459 MB usable
 PMM: free regions (up to 4):
 PMM:   [1000..87000) 134 pages
 PMM:   [88000..a0000) 24 pages
@@ -27,11 +28,41 @@ PMM:   [100000..800000) 1792 pages
 PMM:   [808000..80b000) 3 pages
 Heap initialized (physical allocator backed)
 PMM test: OK (a=1000 b=5000 c=15000)
-PMM test: freed back, free=470812 KB
+PMM test: freed back, free=470796 KB
 Kernel initialized successfully, interrupts on
+Font: 8x8 bitmap loaded
 PIT: 1 s
 PIT: 2 s
 PIT: 3 s
 PIT: 4 s
 PIT: 5 s
 PIT: 6 s
+PIT: 7 s
+PIT: 8 s
+PIT: 9 s
+PIT: 10 s
+PRESS at 40,1210
+  -> taskbar
+PIT: 11 s
+PIT: 12 s
+PIT: 13 s
+PIT: 14 s
+PRESS at 120,50
+  -> window 'System Info' titlebar
+  -> drag start off=94,14
+DRAG window to 46,52
+DRAG window to 66,70
+DRAG window to 86,88
+DRAG window to 106,106
+DRAG window to 126,122
+DRAG window to 146,140
+DRAG window to 166,158
+DRAG window to 186,176
+DRAG window to 206,192
+DRAG window to 226,210
+DRAG window to 246,228
+DRAG window to 266,246
+PIT: 15 s
+PIT: 16 s
+PIT: 17 s
+PIT: 18 s

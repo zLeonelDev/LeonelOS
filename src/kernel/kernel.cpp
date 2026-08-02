@@ -6,10 +6,13 @@
 #include <arch/x86_64/interrupts/interrupts.h>
 #include <arch/x86_64/drivers/timer/timer.h>
 #include <arch/x86_64/drivers/keyboard/keyboard.h>
+#include <arch/x86_64/drivers/mouse/mouse.h>
 #include <graphics/framebuffer/framebuffer.h>
 #include <graphics/bootui/bootui.h>
 #include <memory/physical/physical.h>
 #include <memory/heap/heap.h>
+#include <graphics/font/font.h>
+#include <graphics/desktop/desktop.h>
 
 extern "C" void kernel_main(FramebufferInfo* framebuffer, BootAssets* assets, MemoryMap* memory_map) {
     debug_init();
@@ -28,6 +31,7 @@ extern "C" void kernel_main(FramebufferInfo* framebuffer, BootAssets* assets, Me
 
     timer_init(TIMER_FREQUENCY);
     keyboard_init();
+    mouse_init();
 
     init_physical_memory(memory_map);
 
@@ -68,5 +72,7 @@ extern "C" void kernel_main(FramebufferInfo* framebuffer, BootAssets* assets, Me
     bootui_init(assets);
     bootui_draw_boot_screen();
 
-    bootui_animate_loading();
+    font_init();
+
+    desktop_run();
 }

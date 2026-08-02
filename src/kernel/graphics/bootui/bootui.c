@@ -2,6 +2,8 @@
 #include <framebuffer.h>
 #include <keyboard.h>
 #include <timer.h>
+#include <mouse.h>
+#include <cursor.h>
 #include <types.h>
 #include <debug.h>
 
@@ -175,6 +177,12 @@ void bootui_draw_spinner(u32 x, u32 y) {
     }
 }
 
+void bootui_spinner_pos(u32* x, u32* y, u32* size) {
+    if (x) *x = g_layout_spinner_x;
+    if (y) *y = g_layout_spinner_y;
+    if (size) *size = g_layout_spinner_size;
+}
+
 /*
  * Procedural spinner ring with an animated arc. The ring is a thin annulus
  * (inner radius ~70% of outer) drawn in cyan. A leading "arc" sector covers
@@ -282,6 +290,9 @@ void bootui_animate_loading() {
      * the first rotated frame, so the highlight arc appears immediately. */
     bootui_draw_ring(g_layout_spinner_x, g_layout_spinner_y, g_layout_spinner_size);
 
+    cursor_init();
+    cursor_draw();
+
     u64 last_draw_tick = 0;
     for (;;) {
         asm volatile("hlt");
@@ -291,6 +302,14 @@ void bootui_animate_loading() {
         if ((now - last_draw_tick) >= 2) {
             last_draw_tick = now;
             bootui_draw_ring(g_layout_spinner_x, g_layout_spinner_y, g_layout_spinner_size);
+
+            cursor_restore();
+            u32 mx, my;
+            mouse_get_position(&mx, &my);
+            if (mx >= fb->width) mx = fb->width - 1;
+            if (my >= fb->height) my = fb->height - 1;
+            cursor_set_position(mx, my);
+            cursor_draw();
         }
         while (keyboard_has_char()) {
             char c = keyboard_read_char();

@@ -19,7 +19,12 @@ set(KERNEL_SOURCES
     ${KERNEL_DIR}/arch/x86_64/interrupts/pic.cpp
     ${KERNEL_DIR}/arch/x86_64/drivers/timer/timer.cpp
     ${KERNEL_DIR}/arch/x86_64/drivers/keyboard/keyboard.cpp
+    ${KERNEL_DIR}/arch/x86_64/drivers/mouse/mouse.cpp
     ${KERNEL_DIR}/graphics/bootui/bootui.c
+    ${KERNEL_DIR}/graphics/font/font.c
+    ${KERNEL_DIR}/graphics/cursor/cursor.c
+    ${KERNEL_DIR}/graphics/compositor/compositor.c
+    ${KERNEL_DIR}/graphics/desktop/desktop.c
     ${KERNEL_DIR}/graphics/framebuffer/framebuffer.c
     ${KERNEL_DIR}/memory/physical/physical.c
     ${KERNEL_DIR}/memory/virtual/virtual.c
@@ -51,8 +56,13 @@ set(KERNEL_INCLUDE_DIRS
     ${KERNEL_DIR}/graphics/framebuffer
     ${KERNEL_DIR}/graphics/renderer
     ${KERNEL_DIR}/graphics/bootui
+    ${KERNEL_DIR}/graphics/font
+    ${KERNEL_DIR}/graphics/cursor
+    ${KERNEL_DIR}/graphics/compositor
+    ${KERNEL_DIR}/graphics/desktop
     ${KERNEL_DIR}/arch/x86_64/drivers/timer
     ${KERNEL_DIR}/arch/x86_64/drivers/keyboard
+    ${KERNEL_DIR}/arch/x86_64/drivers/mouse
     ${KERNEL_DIR}/debug
 )
 

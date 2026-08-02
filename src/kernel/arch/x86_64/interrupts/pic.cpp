@@ -34,6 +34,12 @@ void irq_enable(u8 irq) {
         mask &= ~(1 << irq);
         port_byte_out(0x21, mask);
     } else {
+        /* Slave PIC IRQs only reach the CPU through the master's cascade
+         * line (master IRQ 2), so that bit must be unmasked as well. */
+        u8 master_mask = port_byte_in(0x21);
+        master_mask &= ~(1 << 2);
+        port_byte_out(0x21, master_mask);
+
         u8 mask = port_byte_in(0xA1);
         mask &= ~(1 << (irq - 8));
         port_byte_out(0xA1, mask);
