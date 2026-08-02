@@ -1,6 +1,6 @@
 # LeonelOS
 
-A completely new operating system written from scratch, designed with a clean and modular architecture.
+A hobby operating system written from scratch, designed with a clean and modular architecture.
 
 ## Architecture
 
