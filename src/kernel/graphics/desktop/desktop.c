@@ -6,7 +6,6 @@
 #include <keyboard.h>
 #include <mouse.h>
 #include <timer.h>
-#include <debug.h>
 #include <types.h>
 #include <memory/physical/physical.h>
 #include <memory/heap/heap.h>
@@ -310,7 +309,6 @@ static void update_drag(void) {
 static void handle_keys(void) {
     while (keyboard_has_char()) {
         char c = keyboard_read_char();
-        debug_log("KEY char=%c code=0x%x\n", c, (u8)c);
         Window* w = compositor_focused_window();
         if (w && w->key_handler) w->key_handler(w, c);
     }

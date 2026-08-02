@@ -3,11 +3,11 @@ BdsDxe: starting Boot0001 "UEFI QEMU DVD-ROM QM00003 " from PciRoot(0x0)/Pci(0x1
 LeonelOS Bootloader 0.1.0
 Framebuffer: 960x640 pitch=3840 bpp=32 fmt=1
   masks: R=ff G=ff00 B=ff0000 A=ff000000
-  SFSP: '\kernel.elf' filesize=724560
-  SFSP: '\kernel.elf' filesize=724560
+  SFSP: '\kernel.elf' filesize=724448
+  SFSP: '\kernel.elf' filesize=724448
 LOAD: virt=0x10000000 size=0x8000 file_size=0x8000
 LOAD: virt=0x10008000 size=0x87000 file_size=0x87000
-Kernel entry: 0x100065c0
+Kernel entry: 0x100065b0
   SFSP: '\boot\assets\leonelos.rgba' filesize=321552
   SFSP: '\boot\assets\icon.rgba' filesize=718080
   SFSP: '\boot\assets\spinner.rgba' filesize=1048576
@@ -39,12 +39,5 @@ PIT: 5 s
 PIT: 6 s
 PIT: 7 s
 PIT: 8 s
-KEY char=a code=0x61
-KEY char=b code=0x62
-KEY char=c code=0x63
-KEY char=
- code=0xa
 PIT: 9 s
 PIT: 10 s
-PIT: 11 s
-PIT: 12 s
